@@ -63,7 +63,7 @@ const elementSymbols = {
 };
 
 function setup() {
-  createCanvas(700, 700);
+  createCanvas(600, 600);
   textAlign(CENTER, CENTER);
   textSize(16);
 
