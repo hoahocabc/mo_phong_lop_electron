@@ -67,28 +67,31 @@ function setup() {
   textAlign(CENTER, CENTER);
   textSize(16);
 
-  // Setup top-left input cho electron count và element symbol.
+  // Setup top-left input for electron count and element symbol.
   topRowDiv = createDiv("");
   topRowDiv.position(20, 20);
   topRowDiv.style("color", "white");
   topRowDiv.style("font-family", "sans-serif");
+  
   let labelSpan = createSpan("Số electron: ");
   labelSpan.parent(topRowDiv);
+  
   electronInput = createInput("0");
   electronInput.style("width", "30px");
   electronInput.parent(topRowDiv);
   electronInput.input(updateElectronCount);
+  
   elementSymbolSpan = createSpan(" (Kí hiệu: -)");
   elementSymbolSpan.parent(topRowDiv);
 
-  // Setup bottom row cho shell distribution.
+  // Setup bottom row for shell distribution.
   bottomRowDiv = createDiv("");
-  bottomRowDiv.position(20, 60);
+  bottomRowDiv.position(20, 50);
   bottomRowDiv.style("color", "white");
   bottomRowDiv.style("font-family", "sans-serif");
   bottomRowDiv.html("Số electron theo lớp: ");
 
-  // Tạo nút "Lớp vỏ" cho shell overlay.
+  // Create the "Lớp vỏ" button for toggling the shell overlay.
   toggleShellButton = createButton("Lớp vỏ");
   toggleShellButton.mousePressed(toggleShellOverlay);
   toggleShellButton.style("font-family", "sans-serif");
@@ -102,7 +105,7 @@ function updateElectronCount() {
   let val = parseInt(electronInput.value());
   if (!isNaN(val)) {
     electronCount = val;
-    // Reset trạng thái khi nhập số electron mới.
+    // Reset state when a new electron count is entered.
     outerRemoved = 0;
     extraAdded = 0;
     dragging = false;
@@ -118,7 +121,6 @@ function updateElectronCount() {
 }
 
 function getOrbitalConfiguration(n) {
-  // Các trường hợp ngoại lệ cho số electron cụ thể.
   if (n === 24) {
     return [
       { label: "1s", electrons: 2, shell: 1 },
@@ -207,7 +209,7 @@ function getOrbitalConfiguration(n) {
     ];
     return xenonConfig.concat(anomaly);
   }
-  // Mặc định: điền orbitals theo thứ tự.
+  // Default: fill orbitals sequentially.
   let config = [];
   let remaining = n;
   for (let orb of orbitals) {
@@ -234,7 +236,7 @@ function getShellDistribution(n) {
 function draw() {
   background(0);
   push();
-  // Áp dụng hiệu ứng zoom cho phần hiển thị nguyên tử.
+  // Apply zoom effect for the atom display.
   translate(width / 2, height / 2);
   scale(zoom);
   translate(-width / 2, -height / 2);
@@ -242,7 +244,7 @@ function draw() {
   const centerX = width / 2;
   const centerY = height / 2;
 
-  // Vẽ hạt nhân.
+  // Draw the nucleus.
   const nucleusLabel = (electronCount === 0) ? "0" : electronCount + "+";
   fill(255, 0, 0);
   noStroke();
@@ -250,7 +252,7 @@ function draw() {
   fill(255);
   text(nucleusLabel, centerX, centerY);
 
-  // Tính toán phân bố electron theo lớp.
+  // Calculate electron distribution per shell.
   let displayDistribution = {};
   for (let s in originalDistribution) {
     let shellNum = parseInt(s);
@@ -270,13 +272,13 @@ function draw() {
   bottomRowDiv.html("Số electron theo lớp: " + shellCounts.join(" / "));
 
   const baseRadiusIncrement = 50;
-  // Cập nhật hoặc khởi tạo vị trí cho từng lớp.
+  // Update or initialize positions for each shell.
   for (let s of sortedShells) {
     const shellNumber = parseInt(s);
     let nElectrons = displayDistribution[s];
     const radius = 60 + (shellNumber - 1) * baseRadiusIncrement;
 
-    // Vẽ vòng quỹ đạo.
+    // Draw the orbital circle.
     noFill();
     stroke(200);
     strokeWeight(1);
@@ -303,7 +305,7 @@ function draw() {
     }
   }
 
-  // Vẽ electron trên các quỹ đạo.
+  // Draw electrons on orbitals.
   for (let s of sortedShells) {
     let targets = electronPositions[s];
     if (!targets) continue;
@@ -316,7 +318,7 @@ function draw() {
     }
   }
 
-  // Nếu có electron đang được kéo để xóa, vẽ electron đó màu vàng.
+  // If an electron is being dragged for removal, draw it in yellow.
   if (draggedElectron && !draggingSupply) {
     fill(255, 255, 0);
     noStroke();
@@ -325,18 +327,18 @@ function draw() {
     text("-", draggedElectron.x, draggedElectron.y);
   }
 
-  // Vẽ overlay lớp vỏ nếu bật tính năng.
+  // Draw shell overlay if enabled.
   if (showShellOverlay && currentOuterShell > 0) {
     const outerRadius = 60 + (currentOuterShell - 1) * baseRadiusIncrement;
     const overlayRadius = outerRadius + 20;
     fill(255, 255, 0, 77);  // 30% opacity
     noStroke();
     ellipse(centerX, centerY, overlayRadius * 2, overlayRadius * 2);
-    // Tạo khoảng trống không chạm vào hạt nhân.
+    // Create a gap for the nucleus.
     const gapDiameter = 50 + 30;
     fill(0);
     ellipse(centerX, centerY, gapDiameter, gapDiameter);
-    // Vẽ lại hạt nhân.
+    // Redraw nucleus.
     fill(255, 0, 0);
     ellipse(centerX, centerY, 50, 50);
     fill(255);
@@ -344,42 +346,42 @@ function draw() {
   }
   pop();
 
-  // ---- Vẽ UI góc phải với thứ tự: "Lớp vỏ" - "Electron:" - supply electron ----
+  // ---- Draw the UI on the top-right: "Lớp vỏ" - "Electron:" - supply electron ----
   push();
   resetMatrix();
   noStroke();
-  const paddingRight = 20;
-  // Các khoảng cách giữa các đối tượng UI.
-  const gap = 15;
-  // Chiều cao cố định của dòng UI.
-  const uiY = 20;
+  // Move UI row down by 10px.
+  const uiY = 20 + 10;
+  // Fixed gap between "Lớp vỏ" and "Electron:" is set to 40px.
+  const buttonToLabelGap = 40;
+  // Gap between "Electron:" label and supply electron icon remains 15px.
+  const labelToIconGap = 15;
   
-  // Lấy chiều rộng nút "Lớp vỏ"
+  // Get button "Lớp vỏ" width.
   const toggleWidth = toggleShellButton.elt.offsetWidth;
-  // Lấy chiều rộng nhãn "Electron:" 
+  // Get label "Electron:" metrics.
   const electronLabel = "Electron:";
   const labelWidth = textWidth(electronLabel);
-  // Supply electron có chiều rộng bằng 2 * radius.
+  // Supply electron width (2 * radius).
   const supplyWidth = supplyElectron.radius * 2;
-  // Tính tổng chiều rộng các phần UI.
-  const totalUIWidth = toggleWidth + gap + labelWidth + gap + supplyWidth;
-  // Điểm bắt đầu bên trái cần vẽ UI (từ mép phải)
-  let startX = width - paddingRight - totalUIWidth;
+  // Total UI width.
+  const totalUIWidth = toggleWidth + buttonToLabelGap + labelWidth + labelToIconGap + supplyWidth;
+  // Calculate starting X (centered horizontally) and push it to right by additional 40px.
+  let startX = (width - totalUIWidth) / 2 + 50;
   
-  // Vị trí nút "Lớp vỏ"
+  // Position "Lớp vỏ" button.
   let toggleX = startX;
-  // Increase vertical alignment offset to lower the button further.
-  let toggleY = uiY - (toggleShellButton.elt.offsetHeight / 2) + 8;
+  let toggleY = uiY - (toggleShellButton.elt.offsetHeight / 2);
   toggleShellButton.position(toggleX, toggleY);
   
-  // Vẽ nhãn "Electron:" bên phải nút "Lớp vỏ"
-  let labelX = toggleX + toggleWidth + gap;
+  // Draw "Electron:" label right to the button with a fixed gap of 40px.
+  let labelX = toggleX + toggleWidth + buttonToLabelGap;
   fill(255);
   textAlign(LEFT, CENTER);
   text(electronLabel, labelX, uiY);
   
-  // Vẽ supply electron bên phải nhãn "Electron:".
-  let supplyX = labelX + labelWidth + gap;
+  // Draw supply electron icon to the right of the label.
+  let supplyX = labelX + labelWidth + labelToIconGap;
   supplyElectron.y = uiY;
   if (!draggingSupply) {
     supplyElectron.x = supplyX + supplyElectron.radius;
@@ -394,14 +396,14 @@ function draw() {
 }
 
 function mousePressed() {
-  // Kiểm tra nếu chuột đang trỏ vào supply electron (toạ độ cửa sổ).
+  // Check if the mouse is over the supply electron (window coordinates).
   if (dist(mouseX, mouseY, supplyElectron.x, supplyElectron.y) < supplyElectron.radius) {
     draggingSupply = true;
     draggedElectron = { x: supplyElectron.x, y: supplyElectron.y };
     return;
   }
   
-  // Nếu không, kiểm tra việc kéo electron để xóa khỏi quỹ đạo.
+  // Otherwise, check for dragging an electron for removal from an orbital.
   const worldMouseX = (mouseX - width / 2) / zoom + width / 2;
   const worldMouseY = (mouseY - height / 2) / zoom + height / 2;
   if (currentOuterShell <= 0) return;
@@ -421,7 +423,7 @@ function mousePressed() {
     electronPositions[currentOuterShell] = positions;
   }
   
-  // Bắt đầu kéo electron để xóa nếu chuột trúng.
+  // Begin dragging electron for removal if the mouse is near an electron.
   for (let i = 0; i < positions.length; i++) {
     let pos = positions[i];
     if (dist(worldMouseX, worldMouseY, pos.x, pos.y) < 10) {
@@ -447,7 +449,7 @@ function mouseDragged() {
 }
 
 function mouseReleased() {
-  // Khi thả supply electron để thêm.
+  // When releasing the supply electron to add.
   if (draggingSupply) {
     const baseRadiusIncrement = 50;
     const radius = 60 + (currentOuterShell - 1) * baseRadiusIncrement;
@@ -463,7 +465,7 @@ function mouseReleased() {
     supplyElectron.y = 20;
   }
   
-  // Xử lý khi thả electron được kéo để xóa.
+  // Process electron removal drag release.
   if (dragging) {
     outerRemoved++;
     dragging = false;
