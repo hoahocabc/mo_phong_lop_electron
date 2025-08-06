@@ -5,10 +5,29 @@
     <title>Atom Visualization with p5.js</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.js"></script>
     <script src="sketch.js"></script>
+    <style>
+      /* Thiết lập hiển thị của body để nội dung căn giữa theo cả ngang và dọc */
+      body {
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: #000;
+      }
+      /* Các phần tử HTML có thể được định vị tương đối bên trong file sketch.js nếu cần */
+      .electron-label {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        color: white;
+        font-family: sans-serif;
+      }
+    </style>
   </head>
   <body>
     <!-- Label for electron count input -->
-    <div style="position: absolute; top: 20px; left: 20px; color: white; font-family: sans-serif;">
+    <div class="electron-label">
       Số electron:
       <!-- The input element is created by p5.js inside sketch.js -->
     </div>
